@@ -166,14 +166,6 @@
             android:translationX="10dp" />
 
         <ImageView
-            android:id="@+id/currentColor"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="#000000"
-            android:translationX="8dp"
-            app:srcCompat="?attr/actionBarItemBackground" />
-
-        <ImageView
             android:id="@+id/currentTool"
             android:layout_width="match_parent"
             android:layout_height="50dp"
@@ -181,6 +173,15 @@
             android:translationX="2dp"
             android:translationY="2dp"
             app:srcCompat="@drawable/pencil" />
+
+        <ImageView
+            android:id="@+id/currentColor"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="#000000"
+            android:translationX="8dp"
+            android:translationY="8dp"
+            app:srcCompat="?attr/actionBarItemBackground" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

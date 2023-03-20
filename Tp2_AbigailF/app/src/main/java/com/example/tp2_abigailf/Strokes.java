@@ -6,16 +6,21 @@ import android.util.Log;
 public class Strokes {
     private Stroke[] strokes;
     private int strokeCount;
-    public Strokes(int strokeCount){
-        this.strokeCount = strokeCount;
-        this.strokes = new Stroke[this.strokeCount];
+    private int capacity;
+    public Strokes(){
+        this.strokeCount = 0;
+        this.capacity = 2;
+        this.strokes = new Stroke[this.capacity];
     }
     public void addStroke(Stroke s){
         this.strokeCount+=1;
-        Stroke[] oldStrokes = this.strokes;
-        this.strokes = new Stroke[this.strokeCount];
-        for(int i=0;i<oldStrokes.length;i++){
-            this.strokes[i]= oldStrokes[i];
+        if (this.strokeCount > this.capacity) {
+            this.capacity *= 1.618;
+            Stroke[] oldStrokes = this.strokes;
+            this.strokes = new Stroke[this.capacity];
+            for(int i=0;i<oldStrokes.length;i++){
+                this.strokes[i]= oldStrokes[i];
+            }
         }
         this.strokes[strokeCount-1] = s;
     }
@@ -24,7 +29,9 @@ public class Strokes {
         return strokeCount;
     }
 
-    public Stroke getStrokeAtId(int id){
+
+    public Stroke[] getStrokes() { return strokes; }
+    public Stroke at(int id){
         return this.strokes[id];
     }
 }

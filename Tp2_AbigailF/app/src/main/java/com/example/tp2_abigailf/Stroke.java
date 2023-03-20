@@ -20,5 +20,7 @@ public class Stroke {
         return color;
     }
 
+    public void setPath(Path path) { this.path = path; }
+
     public boolean isEraser() { return isEraser;}
 }

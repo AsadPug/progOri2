@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         surface = new Surface (this);
         ecCanvas = new EcouteurCanvas();
         ecOutils = new EcouteurOutils();
-        strokes = new Strokes(0);
+        strokes = new Strokes();
 
         backgroundColor = Color.WHITE;
         currentColor = Color.BLACK;
@@ -139,17 +139,17 @@ public class MainActivity extends AppCompatActivity {
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
             for(int i=0;i<strokes.getStrokeCount();i++){
-                if(strokes.getStrokeAtId(i).isEraser()){
+                if(strokes.at(i).isEraser()){
                     paint.setColor(backgroundColor);
                     paint.setStrokeWidth(pen.getWidth()*(float)2);
                 }
 
                 else{
-                    paint.setColor(strokes.getStrokeAtId(i).getColor());
+                    paint.setColor(strokes.at(i).getColor());
                     paint.setStrokeWidth(pen.getWidth());
                 }
 
-                canvas.drawPath(strokes.getStrokeAtId(i).getPath(),paint);
+                canvas.drawPath(strokes.at(i).getPath(),paint);
             }
 
         }
@@ -164,6 +164,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private class EcouteurCanvas implements View.OnTouchListener {
         private Path p;
+        private Shape shape;
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if(currentTool == tools.get("Pencil")|| currentTool == tools.get("Eraser")){
@@ -172,19 +173,17 @@ public class MainActivity extends AppCompatActivity {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         p = new Path();
-                        p.moveTo(pen.getX(),pen.getY());
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        p.lineTo(pen.getX(),pen.getY());
-                        p.moveTo(pen.getX(),pen.getY());
-                        break;
-                    case MotionEvent.ACTION_UP:
                         boolean isEraser=false;
                         if(currentTool == tools.get("Eraser"))
                             isEraser = true;
                         Stroke s = new Stroke(p,currentColor,isEraser);
                         strokes.addStroke(s);
-
+                        p.moveTo(pen.getX(),pen.getY());
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        p.lineTo(pen.getX(),pen.getY());
+                        strokes.getStrokes()[strokes.getStrokeCount()-1].setPath(p);
+                        break;
                 }
             }
             else if(currentTool == tools.get("ColorPicker")){
@@ -200,7 +199,35 @@ public class MainActivity extends AppCompatActivity {
                 backgroundColor = currentColor;
                 surface.setBackgroundColor(backgroundColor);
             }
+            else if(currentTool == tools.get("Round") || currentTool == tools.get("Square")){
+                p = new Path();
+                switch(event.getAction()){
+                    case MotionEvent.ACTION_DOWN:
+                        shape = new Shape(event.getX(), event.getY());
+                        shape.setEndPoint(event.getX(),event.getY());
+                        Stroke s = new Stroke(p,currentColor,false);
+                        strokes.addStroke(s);
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        shape.setEndPoint(event.getX(),event.getY());
+                        if (currentTool == tools.get("Round"))
+                            p.addCircle(shape.getX1(),shape.getY1(),shape.getRayon(), Path.Direction.CW);
+                        else
+                            p.addRect(shape.getX1(),shape.getY1(),shape.getX2(),shape.getY2(), Path.Direction.CW);
+                        strokes.at(strokes.getStrokeCount()-1).setPath(p);
+                        break;
+                    case MotionEvent.ACTION_UP:
 
+                        shape.setEndPoint(event.getX(),event.getY());
+                        if (currentTool == tools.get("Round"))
+                            p.addCircle(shape.getX1(),shape.getY1(),shape.getRayon(), Path.Direction.CW);
+                        else
+                            p.addRect(shape.getX1(),shape.getY1(),shape.getX2(),shape.getY2(), Path.Direction.CW);
+                        strokes.at(strokes.getStrokeCount()-1).setPath(p);
+                        break;
+                }
+            }
+            Log.d("CURRENTTOOL", Integer.toString(currentTool));
             surface.invalidate();
             return true;
         }
