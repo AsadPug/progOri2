@@ -6,9 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -19,7 +16,6 @@ import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
 
 import java.util.HashMap;
 
@@ -37,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     ImageView currentColorView,currentToolView;
     Button colorButtons [];
+    LargeurTrait largeurTraitActivity;
     int currentColor,currentTool,backgroundColor,colorAmount;
 
     @Override
@@ -50,7 +47,8 @@ public class MainActivity extends AppCompatActivity {
         ecCanvas = new EcouteurCanvas();
         ecOutils = new EcouteurOutils();
         strokes = new Strokes();
-
+        largeurTraitActivity = new LargeurTrait(this);
+        largeurTraitActivity.show();
         backgroundColor = Color.WHITE;
         currentColor = Color.BLACK;
         colorAmount = 8;
@@ -164,72 +162,125 @@ public class MainActivity extends AppCompatActivity {
     }
     private class EcouteurCanvas implements View.OnTouchListener {
         private Path p;
-        private Shape shape;
+        private Square square;
+        private Round round;
+        private Triangle triangle;
+        private int nTrianglePoints;
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if(currentTool == tools.get("Pencil")|| currentTool == tools.get("Eraser")){
-                pen.setX(event.getX());
-                pen.setY(event.getY());
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        p = new Path();
-                        boolean isEraser=false;
-                        if(currentTool == tools.get("Eraser"))
-                            isEraser = true;
-                        Stroke s = new Stroke(p,currentColor,isEraser);
-                        strokes.addStroke(s);
-                        p.moveTo(pen.getX(),pen.getY());
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        p.lineTo(pen.getX(),pen.getY());
-                        strokes.getStrokes()[strokes.getStrokeCount()-1].setPath(p);
-                        break;
-                }
-            }
-            else if(currentTool == tools.get("ColorPicker")){
-                if(event.getAction() == MotionEvent.ACTION_UP){
-                    Bitmap b = surface.getBitmapImage();
-                    currentColor = b.getPixel((int)event.getX(),(int)event.getY());
-                    currentColorView.setBackgroundColor(currentColor);
-                    currentTool = tools.get("Pencil");
-                    currentToolView.setImageResource(toolImages[currentTool]);
-                }
-            }
-            else if(currentTool == tools.get("Bucket")){
-                backgroundColor = currentColor;
-                surface.setBackgroundColor(backgroundColor);
-            }
-            else if(currentTool == tools.get("Round") || currentTool == tools.get("Square")){
-                p = new Path();
-                switch(event.getAction()){
-                    case MotionEvent.ACTION_DOWN:
-                        shape = new Shape(event.getX(), event.getY());
-                        shape.setEndPoint(event.getX(),event.getY());
-                        Stroke s = new Stroke(p,currentColor,false);
-                        strokes.addStroke(s);
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        shape.setEndPoint(event.getX(),event.getY());
-                        if (currentTool == tools.get("Round"))
-                            p.addCircle(shape.getX1(),shape.getY1(),shape.getRayon(), Path.Direction.CW);
-                        else
-                            p.addRect(shape.getX1(),shape.getY1(),shape.getX2(),shape.getY2(), Path.Direction.CW);
-                        strokes.at(strokes.getStrokeCount()-1).setPath(p);
-                        break;
-                    case MotionEvent.ACTION_UP:
 
-                        shape.setEndPoint(event.getX(),event.getY());
-                        if (currentTool == tools.get("Round"))
-                            p.addCircle(shape.getX1(),shape.getY1(),shape.getRayon(), Path.Direction.CW);
-                        else
-                            p.addRect(shape.getX1(),shape.getY1(),shape.getX2(),shape.getY2(), Path.Direction.CW);
-                        strokes.at(strokes.getStrokeCount()-1).setPath(p);
-                        break;
-                }
+            if(currentTool == tools.get("Pencil")|| currentTool == tools.get("Eraser")){ this.stroke(event); }
+            else if(currentTool == tools.get("ColorPicker")){ this.colorPicker(event); }
+            else if(currentTool == tools.get("Bucket")){ this.bucket(); }
+            else if(currentTool == tools.get("Square")){ this.square(event); }
+            else if(currentTool == tools.get("Round")){ this.round(event); }
+            else if(currentTool == tools.get("Triangle")){this.triangle(event);}
+            if(currentTool != tools.get("Triangle")&&nTrianglePoints!=0){
+                strokes.removeLastStroke();
+                nTrianglePoints=0;
             }
             Log.d("CURRENTTOOL", Integer.toString(currentTool));
             surface.invalidate();
             return true;
+        }
+        private void stroke(MotionEvent event){
+            pen.setX(event.getX());
+            pen.setY(event.getY());
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    p = new Path();
+                    boolean isEraser=false;
+                    if(currentTool == tools.get("Eraser"))
+                        isEraser = true;
+                    Stroke s = new Stroke(p,currentColor,isEraser);
+                    strokes.addStroke(s);
+                    p.moveTo(pen.getX(),pen.getY());
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    p.lineTo(pen.getX(),pen.getY());
+                    strokes.getStrokes()[strokes.getStrokeCount()-1].setPath(p);
+                    break;
+            }
+        }
+        private void colorPicker(MotionEvent event){
+            if(event.getAction() == MotionEvent.ACTION_UP){
+                Bitmap b = surface.getBitmapImage();
+                currentColor = b.getPixel((int)event.getX(),(int)event.getY());
+                currentColorView.setBackgroundColor(currentColor);
+                currentTool = tools.get("Pencil");
+                currentToolView.setImageResource(toolImages[currentTool]);
+            }
+        }
+        private void bucket(){
+            backgroundColor = currentColor;
+            surface.setBackgroundColor(backgroundColor);
+        }
+        private void square(MotionEvent event){
+            p = new Path();
+            switch(event.getAction()){
+                case MotionEvent.ACTION_DOWN:
+                    square = new Square(event.getX(), event.getY());
+                    square.setSecondPoint(event.getX(),event.getY());
+                    Stroke s = new Stroke(p,currentColor,false);
+                    strokes.addStroke(s);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    square.setSecondPoint(event.getX(),event.getY());
+                    p.addRect(square.getX1(), square.getY1(), square.getX2(), square.getY2(), Path.Direction.CW);
+                    strokes.at(strokes.getStrokeCount()-1).setPath(p);
+                    break;
+                case MotionEvent.ACTION_UP:
+                    square.setSecondPoint(event.getX(),event.getY());
+                    p.addRect(square.getX1(), square.getY1(), square.getX2(), square.getY2(), Path.Direction.CW);
+                    strokes.at(strokes.getStrokeCount()-1).setPath(p);
+                    break;
+            }
+        }
+        private void round(MotionEvent event){
+            p = new Path();
+            switch(event.getAction()){
+                case MotionEvent.ACTION_DOWN:
+                    round = new Round(event.getX(), event.getY());
+                    round.setSecondPoint(event.getX(),event.getY());
+                    Stroke s = new Stroke(p,currentColor,false);
+                    strokes.addStroke(s);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    round.setSecondPoint(event.getX(),event.getY());
+                    p.addCircle(round.getX1(), round.getY1(), round.getRayon(), Path.Direction.CW);
+                    strokes.at(strokes.getStrokeCount()-1).setPath(p);
+                    break;
+                case MotionEvent.ACTION_UP:
+                    round.setSecondPoint(event.getX(),event.getY());
+                    p.addCircle(round.getX1(), round.getY1(), round.getRayon(), Path.Direction.CW);
+                    strokes.at(strokes.getStrokeCount()-1).setPath(p);
+                    break;
+            }
+        }
+        private void triangle(MotionEvent event) {
+            if(event.getAction() == MotionEvent.ACTION_DOWN){
+                if(nTrianglePoints == 0){
+                    p= new Path();
+                    triangle = new Triangle(event.getX(),event.getY());
+                    Stroke s = new Stroke(p,currentColor,false);
+                    strokes.addStroke(s);
+                }
+                nTrianglePoints += 1;
+                p.addCircle(event.getX(), event.getY(), 5, Path.Direction.CW);
+                strokes.at(strokes.getStrokeCount()-1).setPath(p);
+                if(nTrianglePoints == 2)triangle.setSecondPoint(event.getX(), event.getY());
+                if(nTrianglePoints == 3){
+                    p = new Path();
+                    nTrianglePoints=0;
+                    triangle.setThirdPoint(event.getX(), event.getY());
+                    p.moveTo(triangle.getX1(),triangle.getY1());
+                    p.lineTo(triangle.getX2(),triangle.getY2());
+                    p.lineTo(triangle.getX3(),triangle.getY3());
+                    p.lineTo(triangle.getX1(),triangle.getY1());
+                    strokes.at(strokes.getStrokeCount()-1).setPath(p);
+                }
+
+            }
         }
 
 
@@ -248,8 +299,11 @@ public class MainActivity extends AppCompatActivity {
             else if(v.getParent() == toolBox){
                 for(int i=0;i<toolBox.getChildCount();i++){
                     if(toolBox.getChildAt(i)==v)
-                        currentTool = i;
+                        if(i == tools.get("Undo"))strokes.undo();
+                        else if(i == tools.get("Redo"))strokes.redo();
+                        else currentTool = i;
                 }
+                surface.invalidate();
                 currentToolView.setImageResource(toolImages[currentTool]);
                 Log.d("CURRENTTOOL", Integer.toString(currentTool));
             }
