@@ -24,7 +24,7 @@ public class LargeurTrait extends Dialog {
         seekBar = findViewById(R.id.seekBar);
         ok = findViewById(R.id.ok);
         textView = findViewById(R.id.strokeWidthText);
-        textView.setText("Stroke width : " + Integer.toString(mainActivity.pen.getWidth()));
+        //textView.setText("Stroke width : " + Integer.toString(mainActivity.pen.getWidth()));
     }
 
     @Override
