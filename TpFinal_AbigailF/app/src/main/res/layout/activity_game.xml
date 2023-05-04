@@ -51,6 +51,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/hand"
         android:layout_width="319dp"
         android:layout_height="221dp"
         android:layout_marginBottom="16dp"
