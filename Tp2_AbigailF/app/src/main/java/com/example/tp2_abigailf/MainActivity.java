@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
         ecOutils = new EcouteurOutils();
         strokes = new Strokes();
         largeurTraitActivity = new LargeurTrait(this);
-        largeurTraitActivity.show();
         backgroundColor = Color.WHITE;
         currentColor = Color.BLACK;
         colorAmount = 8;
@@ -139,12 +138,12 @@ public class MainActivity extends AppCompatActivity {
             for(int i=0;i<strokes.getStrokeCount();i++){
                 if(strokes.at(i).isEraser()){
                     paint.setColor(backgroundColor);
-                    paint.setStrokeWidth(pen.getWidth()*(float)2);
+                    paint.setStrokeWidth(strokes.at(i).getWidth()*(float)2);
                 }
 
                 else{
                     paint.setColor(strokes.at(i).getColor());
-                    paint.setStrokeWidth(pen.getWidth());
+                    paint.setStrokeWidth(strokes.at(i).getWidth());
                 }
 
                 canvas.drawPath(strokes.at(i).getPath(),paint);
@@ -179,7 +178,6 @@ public class MainActivity extends AppCompatActivity {
                 strokes.removeLastStroke();
                 nTrianglePoints=0;
             }
-            Log.d("CURRENTTOOL", Integer.toString(currentTool));
             surface.invalidate();
             return true;
         }
@@ -192,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
                     boolean isEraser=false;
                     if(currentTool == tools.get("Eraser"))
                         isEraser = true;
-                    Stroke s = new Stroke(p,currentColor,isEraser);
+                    Stroke s = new Stroke(p,currentColor,pen.getWidth(),isEraser);
                     strokes.addStroke(s);
                     p.moveTo(pen.getX(),pen.getY());
                     break;
@@ -221,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_DOWN:
                     square = new Square(event.getX(), event.getY());
                     square.setSecondPoint(event.getX(),event.getY());
-                    Stroke s = new Stroke(p,currentColor,false);
+                    Stroke s = new Stroke(p,currentColor,pen.getWidth(),false);
                     strokes.addStroke(s);
                     break;
                 case MotionEvent.ACTION_MOVE:
@@ -242,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_DOWN:
                     round = new Round(event.getX(), event.getY());
                     round.setSecondPoint(event.getX(),event.getY());
-                    Stroke s = new Stroke(p,currentColor,false);
+                    Stroke s = new Stroke(p,currentColor,pen.getWidth(),false);
                     strokes.addStroke(s);
                     break;
                 case MotionEvent.ACTION_MOVE:
@@ -262,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
                 if(nTrianglePoints == 0){
                     p= new Path();
                     triangle = new Triangle(event.getX(),event.getY());
-                    Stroke s = new Stroke(p,currentColor,false);
+                    Stroke s = new Stroke(p,currentColor,pen.getWidth(),false);
                     strokes.addStroke(s);
                 }
                 nTrianglePoints += 1;
@@ -301,11 +299,11 @@ public class MainActivity extends AppCompatActivity {
                     if(toolBox.getChildAt(i)==v)
                         if(i == tools.get("Undo"))strokes.undo();
                         else if(i == tools.get("Redo"))strokes.redo();
+                        else if (i == tools.get("StrokeSize"))largeurTraitActivity.show();
                         else currentTool = i;
                 }
                 surface.invalidate();
                 currentToolView.setImageResource(toolImages[currentTool]);
-                Log.d("CURRENTTOOL", Integer.toString(currentTool));
             }
         }
     }
