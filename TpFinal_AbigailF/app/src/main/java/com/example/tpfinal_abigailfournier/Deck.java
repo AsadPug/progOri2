@@ -2,7 +2,6 @@ package com.example.tpfinal_abigailfournier;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class Deck {
     private ArrayList<Card> deck;
@@ -19,7 +18,7 @@ public class Deck {
         }
         Collections.shuffle(this.deck);
     }
-    public Card pick_random_card(){
+    public Card pickRandomCard(){
         Card randCard = this.deck.get(nCards-1);
         this.deck.remove(nCards-1);
         nCards--;
