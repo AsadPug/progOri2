@@ -8,6 +8,17 @@
     android:background="#000000"
     tools:context=".GameActivity">
 
+    <ImageView
+        android:id="@+id/undo"
+        android:layout_width="49dp"
+        android:layout_height="41dp"
+        android:layout_marginTop="256dp"
+        android:src="@drawable/undo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:srcCompat="@drawable/undo" />
+
     <TextView
         android:id="@+id/higher1"
         android:layout_width="61dp"
@@ -147,5 +158,52 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/textView27" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/hud"
+        android:layout_width="413dp"
+        android:layout_height="82dp"
+        android:background="#FFFFFF"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Chronometer
+            android:id="@+id/time"
+            android:layout_width="72dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="(info)"
+            android:textAlignment="center"
+            android:textColor="#000000"
+            android:textSize="60sp" />
+
+        <LinearLayout
+            android:layout_width="145dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/cardsLeft"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:text="CARDS LEFT : "
+                android:textAlignment="center"
+                android:textColor="#000000"
+                android:textSize="24sp" />
+
+            <TextView
+                android:id="@+id/score"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="SCORE : 23233232323232"
+                android:textAlignment="center"
+                android:textColor="#000000"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

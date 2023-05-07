@@ -15,20 +15,28 @@ public class CardStack {
     public Card getTopCard(){
         return this.stack.get(this.stack.size()-1);
     }
+    public Card getSecondTopCard(){
+        return this.stack.get(this.stack.size()-2);
+    }
+    public void removeTopCard(){
+        this.stack.remove(this.stack.size()-1);
+    }
     private boolean isValidCard(Card card){
         boolean isValid = false;
-        if(card.getNumber()<this.getTopCard().getNumber() && this.lower){
+        int nCard = card.getNumber();
+        int nCardStack = this.getTopCard().getNumber();
+        if((nCard < nCardStack||nCard - nCardStack == 10) && this.lower){
             isValid = true;
         }
-        if(card.getNumber()>this.getTopCard().getNumber() && this.lower == false){
+        if((nCard > nCardStack || nCardStack - nCard == 10) && !this.lower){
             isValid = true;
         }
         return isValid;
     }
     public boolean attemptPlaceCard(Card card){
-        boolean placed = this.isValidCard(card);
-        if(placed)
+        boolean placeValid = this.isValidCard(card);
+        if(placeValid)
             this.stack.add(card);
-        return placed;
+        return placeValid;
     }
 }

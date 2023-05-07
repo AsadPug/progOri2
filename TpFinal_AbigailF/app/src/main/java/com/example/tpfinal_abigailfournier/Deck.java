@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class Deck {
+    public static final int nCardsAtStart = 97;
     private ArrayList<Card> deck;
-    private static final int nCardsAtStart = 97;
     private int nCards = this.nCardsAtStart;
     public Deck(){
         this.deck = new ArrayList<Card>(this.nCardsAtStart);
@@ -21,7 +21,9 @@ public class Deck {
     public Card pickRandomCard(){
         Card randCard = this.deck.get(nCards-1);
         this.deck.remove(nCards-1);
-        nCards--;
+        this.nCards--;
         return randCard;
     }
+
+    public int getNCards() {return nCards;}
 }
