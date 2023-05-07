@@ -16,7 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class GameActivity extends AppCompatActivity {
-
+    //Déclaration de variables
     ConstraintLayout hand,gameSurface;
     TextView[] handTextViews;
     TextView higher1, higher2, lower1, lower2,score,cardsLeft;
@@ -25,11 +25,14 @@ public class GameActivity extends AppCompatActivity {
     Game game;
     Ecouteur ec;
     long startTime;
+    DatabaseHelper databaseHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
         getSupportActionBar().hide();
+        //Initiation de variables
         startTime = SystemClock.elapsedRealtime();
 
         game = new Game();
@@ -47,14 +50,18 @@ public class GameActivity extends AppCompatActivity {
         score = findViewById(R.id.score);
         cardsLeft = findViewById(R.id.cardsLeft);
 
+        databaseHelper = DatabaseHelper.getInstance(this);
+
         ec = new Ecouteur();
 
+        //formatage de Views
         updateScore();
         updateCardsLeft();
         startChronometer();
         createInitialHand();
         formatCardStacks();
 
+        //bouton undo est initialement invisible
         undo.setVisibility(View.INVISIBLE);
         undo.setOnClickListener(ec);
     }
@@ -114,11 +121,13 @@ public class GameActivity extends AppCompatActivity {
     private void gameOver(){
         Intent gameOverIntent = new Intent(getApplicationContext(), GameOverActivity.class);
         startActivity(gameOverIntent);
+        databaseHelper.addScore(game.getScore(), databaseHelper.getWritableDatabase());
+        databaseHelper.close();
     }
     private class Ecouteur implements View.OnDragListener, View.OnTouchListener, View.OnClickListener{
         View cardView = null;
         ConstraintLayout parent = null;
-        View sourceDrop = null,sourcePickUp = null;
+        View sourcePickUp = null;
         int cardIndex;
 
         @Override
@@ -141,69 +150,73 @@ public class GameActivity extends AppCompatActivity {
         public boolean onDrag(View source, DragEvent dragEvent) {
             switch (dragEvent.getAction()){
                 case DragEvent.ACTION_DRAG_ENTERED:
+                    //Garde en cache l'information de la carte selectionner ainsi que le View entré en dernier
                     cardView = (View)dragEvent.getLocalState();
                     cardIndex = hand.indexOfChild(cardView);
-                    sourceDrop = source;
+                    break;
+
+                case DragEvent.ACTION_DROP:
+                    Boolean placed = false;
+                    Card card = game.getHand().getCard(cardIndex);
+                    //Garde le nom du stack concerné pour pouvoir update le score apres
+                    //que la carte soit placé.
+                    String stackName = null;
+
+                    //Test le placement de la carte pour le stack concerné. Si le mouvement
+                    //est valide la carte se place sur le stack.
+                    if ((TextView)source == lower1){
+                        stackName = "lower1";
+                        game.setLastMove(stackName);
+                        placed = game.getLower1().attemptPlaceCard(card);
+                    }
+                    if ((TextView)source == lower2){
+                        stackName = "lower2";
+                        game.setLastMove(stackName);
+                        placed = game.getLower2().attemptPlaceCard(card);
+                    }
+                    if ((TextView)source == higher1){
+                        stackName = "higher1";
+                        placed = game.getHigher1().attemptPlaceCard(card);
+                        game.setLastMove(stackName);
+                    }
+                    if ((TextView)source == higher2) {
+                        stackName = "higher2";
+                        placed = game.getHigher2().attemptPlaceCard(card);
+                        game.setLastMove(stackName);
+                    }
+                    if(placed){
+                        //Quand le placement est valide
+                        game.getHand().placeCard(cardIndex);
+                        game.updateScore(stackName);
+                        updateScore();
+
+                        int color = card.getColor();
+                        int textColor = card.getTextColor();
+                        String text = (String) ((TextView) cardView).getText();
+                        ((TextView) source).setBackgroundColor(color);
+                        ((TextView) source).setTextColor(color);
+                        ((TextView) source).setTextColor(textColor);
+                        ((TextView) source).setText(text);
+                        sourcePickUp.setVisibility(View.INVISIBLE);
+                        sourcePickUp = null;
+                        if (game.fillHand()){
+                            undo.setVisibility(View.INVISIBLE);
+                            updateCardsLeft();
+                            showHand();
+                        }
+                        else
+                            undo.setVisibility(View.VISIBLE);
+                        if(game.isGameOver()) {
+                            gameOver();
+                        }
+
+                    }
+
                     break;
 
                 case DragEvent.ACTION_DRAG_ENDED:
-                    if(cardView!=null && source == sourceDrop) {
-                        Boolean placed = false;
-                        Card card = game.getHand().getCard(cardIndex);
-                        String stackName = null;
-
-                        if ((TextView)sourceDrop == lower1){
-                            stackName = "lower1";
-                            game.setLastMove(stackName);
-                            placed = game.getLower1().attemptPlaceCard(card);
-                        }
-                        if ((TextView)sourceDrop == lower2){
-                            stackName = "lower2";
-                            game.setLastMove(stackName);
-                            placed = game.getLower2().attemptPlaceCard(card);
-                        }
-                        if ((TextView)sourceDrop == higher1){
-                            stackName = "higher1";
-                            placed = game.getHigher1().attemptPlaceCard(card);
-                            game.setLastMove(stackName);
-                        }
-                        if ((TextView)sourceDrop == higher2) {
-                            stackName = "higher2";
-                            placed = game.getHigher2().attemptPlaceCard(card);
-                            game.setLastMove(stackName);
-                        }
-                        sourceDrop = null;
-                        if(placed){
-                            int color = card.getColor();
-                            int textColor = card.getTextColor();
-                            String text = (String) ((TextView) cardView).getText();
-                            game.getHand().placeCard(cardIndex);
-                            game.updateScore(stackName);
-                            updateScore();
-
-                            ((TextView) source).setBackgroundColor(color);
-                            ((TextView) source).setTextColor(color);
-                            ((TextView) source).setTextColor(textColor);
-                            ((TextView) source).setText(text);
-                            sourcePickUp.setVisibility(View.INVISIBLE);
-                            sourcePickUp = null;
-                            if (game.fillHand()){
-                                undo.setVisibility(View.INVISIBLE);
-                                updateCardsLeft();
-                                showHand();
-                            }
-                            else
-                                undo.setVisibility(View.VISIBLE);
-
-                        }
-                    }
-                    else if(sourcePickUp!=null)
+                    if(sourcePickUp!=null)
                         sourcePickUp.setVisibility(View.VISIBLE);
-
-
-                    break;
-
-
                 case DragEvent.ACTION_DRAG_EXITED:
                     parent = null;
                     cardView = null;

@@ -18,12 +18,12 @@ public class Deck {
         }
         Collections.shuffle(this.deck);
     }
-    public Card pickRandomCard(){
-        Card randCard = this.deck.get(nCards-1);
+    public Card pickCard(){
+        Card randomCard = this.deck.get(nCards-1);
         this.deck.remove(nCards-1);
         this.nCards--;
-        return randCard;
+        return randomCard;
     }
-
+    //getters
     public int getNCards() {return nCards;}
 }

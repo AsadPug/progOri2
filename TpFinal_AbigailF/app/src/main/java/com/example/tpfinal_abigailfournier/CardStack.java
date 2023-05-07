@@ -11,17 +11,7 @@ public class CardStack {
         if(lower)this.stack.add(new Card(98));
         else this.stack.add(new Card(0));
     }
-
-    public Card getTopCard(){
-        return this.stack.get(this.stack.size()-1);
-    }
-    public Card getSecondTopCard(){
-        return this.stack.get(this.stack.size()-2);
-    }
-    public void removeTopCard(){
-        this.stack.remove(this.stack.size()-1);
-    }
-    private boolean isValidCard(Card card){
+    public boolean isValidCard(Card card){
         boolean isValid = false;
         int nCard = card.getNumber();
         int nCardStack = this.getTopCard().getNumber();
@@ -38,5 +28,14 @@ public class CardStack {
         if(placeValid)
             this.stack.add(card);
         return placeValid;
+    }
+    public Card getTopCard(){
+        return this.stack.get(this.stack.size()-1);
+    }
+    public Card getSecondTopCard(){
+        return this.stack.get(this.stack.size()-2);
+    }
+    public void removeTopCard(){
+        this.stack.remove(this.stack.size()-1);
     }
 }
